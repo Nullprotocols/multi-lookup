@@ -1,0 +1,2714 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Multi Tool Lookup PRO</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+:root {
+    --bg: #050814;
+    --panel: rgba(15,23,42,0.95);
+    --glass: rgba(15,23,42,0.7);
+    --border: rgba(148,163,184,0.4);
+    --accent: #00E1FF;
+    --accent2: #00FFC6;
+    --text: #E5F0FF;
+    --muted: #94A3B8;
+    --success: #22C55E;
+    --danger: #FB7185;
+    --warning: #FBBF24;
+    --radius: 14px;
+    --sidebar-width: 320px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ===== GLOBAL BACKGROUND ===== */
+body {
+    margin: 0;
+    padding: 0;
+    background: radial-gradient(circle at 20% 0%, #0ea5e9 0, transparent 55%),
+                radial-gradient(circle at 80% 100%, #22c55e22 0, transparent 55%),
+                #020617;
+    color: var(--text);
+    overflow-x: hidden;
+    min-height: 100vh;
+    width: 100%;
+    max-width: 100vw;
+}
+
+/* Moving grid */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148,163,184,0.06) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity: 0.9;
+    animation: gridMove 30s linear infinite;
+    pointer-events: none;
+    z-index: -2;
+}
+@keyframes gridMove {
+    from { transform: translate3d(0,0,0); }
+    to   { transform: translate3d(-42px,-42px,0); }
+}
+
+/* Soft glow layer */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 10% 90%, rgba(56,189,248,0.25), transparent 60%),
+      radial-gradient(circle at 90% 10%, rgba(34,197,94,0.18), transparent 60%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: rgba(2, 6, 23, 0.98);
+    backdrop-filter: blur(15px);
+    border-right: 1px solid rgba(56, 189, 248, 0.3);
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sidebar.active {
+    transform: translateX(0);
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+    background: rgba(15, 23, 42, 0.8);
+    position: relative;
+}
+
+/* Close button for sidebar */
+.sidebar-close {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    width: 35px;
+    height: 35px;
+    background: rgba(251, 113, 133, 0.15);
+    border: 1px solid rgba(251, 113, 133, 0.3);
+    border-radius: 50%;
+    color: var(--danger);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.sidebar-close:hover {
+    background: rgba(251, 113, 133, 0.25);
+    transform: rotate(90deg);
+}
+
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-right: 40px; /* Space for close button */
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #020617;
+    font-weight: bold;
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-info h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-info p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-nav {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.nav-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 10px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: var(--muted);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.nav-btn.active {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(34, 197, 94, 0.2));
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.nav-btn:hover:not(.active) {
+    background: rgba(51, 65, 85, 0.5);
+    color: var(--text);
+}
+
+/* Logout button in sidebar content */
+.sidebar-logout-btn {
+    width: 100%;
+    padding: 12px;
+    background: rgba(251, 113, 133, 0.15);
+    border: 1px solid rgba(251, 113, 133, 0.3);
+    border-radius: 10px;
+    color: var(--danger);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s;
+    text-align: center;
+    white-space: nowrap;
+    margin-top: 20px;
+    font-weight: 600;
+}
+
+.sidebar-logout-btn:hover {
+    background: rgba(251, 113, 133, 0.25);
+    transform: translateY(-2px);
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* History List */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.history-item {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    transition: all 0.2s;
+    word-break: break-word;
+}
+
+.history-item:hover {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(56, 189, 248, 0.3);
+    transform: translateY(-2px);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.history-type {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.history-type.search { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+.history-type.login { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.history-type.error { background: rgba(251, 113, 133, 0.15); color: #fb7185; }
+
+.history-time {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.history-input {
+    font-size: 13px;
+    color: var(--text);
+    margin: 8px 0;
+    word-break: break-all;
+}
+
+.history-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.result-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.result-success { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.result-failed { background: rgba(251, 113, 133, 0.15); color: #fb7185; }
+.result-pending { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+
+/* Stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 5px 0;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Quick Actions */
+.quick-actions {
+    margin-top: 25px;
+}
+
+.quick-actions h4 {
+    font-size: 14px;
+    margin-bottom: 15px;
+    color: var(--accent);
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-btn {
+    padding: 12px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 10px;
+    color: #38bdf8;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.action-btn:hover {
+    background: rgba(56, 189, 248, 0.2);
+    transform: translateX(5px);
+}
+
+.action-btn i {
+    font-size: 14px;
+    min-width: 16px;
+}
+
+/* Active Devices Info */
+.active-devices-info {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 10px;
+    padding: 12px;
+    margin: 15px 0;
+    font-size: 12px;
+    color: #38bdf8;
+    text-align: center;
+}
+
+.active-devices-info .device-count {
+    font-weight: bold;
+    color: var(--accent2);
+}
+
+.active-devices-info .max-limit {
+    font-weight: bold;
+    color: var(--warning);
+}
+
+/* Session Status */
+.session-status {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.session-status .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.session-status .status-indicator.inactive {
+    background: var(--danger);
+}
+
+/* Sidebar Toggle */
+.sidebar-toggle {
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    width: 45px;
+    height: 45px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 50%;
+    color: var(--accent);
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(56, 189, 248, 0.1);
+    transform: scale(1.1);
+}
+
+/* ===== MAIN CONTAINER ===== */
+.main-container {
+    width: 100%;
+    max-width: 500px;
+    padding: 80px 15px 30px;
+    margin: 0 auto;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+}
+
+.main-container.sidebar-open {
+    transform: translateX(calc(var(--sidebar-width) / 2));
+}
+
+/* ===== LOGIN BOX ===== */
+.login-box {
+    background: rgba(15,23,42,0.95);
+    border-radius: 18px;
+    border: 1px solid rgba(148,163,184,0.45);
+    box-shadow: 0 20px 45px rgba(15,23,42,0.95);
+    padding: 25px 20px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.login-box::before {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background:
+      radial-gradient(circle at 0 0, rgba(56,189,248,0.22), transparent 55%),
+      radial-gradient(circle at 100% 100%, rgba(34,197,94,0.18), transparent 55%);
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.login-inner {
+    position: relative;
+    z-index: 1;
+}
+
+/* Header */
+.login-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.logo-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 0%, #e0f2fe, #0ea5e9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0b1120;
+    box-shadow: 0 0 30px rgba(56,189,248,0.9);
+    margin: 0 auto 15px;
+    font-size: 24px;
+}
+
+.login-title {
+    font-size: 20px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+}
+
+.login-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+}
+
+.pro-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #020617;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Form */
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    flex-wrap: wrap;
+}
+
+.input-label .helper {
+    font-size: 11px;
+    color: var(--accent);
+    cursor: help;
+    opacity: 0.7;
+}
+
+.input-field {
+    width: 100%;
+    background: rgba(2, 8, 23, 0.7);
+    border: 1px solid rgba(148,163,184,0.5);
+    border-radius: 999px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: all 0.25s;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.input-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(56,189,248,0.2);
+}
+
+.input-field::placeholder {
+    color: #64748b;
+}
+
+/* Login Button */
+.login-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #020617;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 12px 28px rgba(8,47,73,0.95);
+    transition: all 0.3s;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.login-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
+}
+
+.login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px rgba(8,47,73,0.95);
+}
+
+.login-btn:hover::before {
+    left: 100%;
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+/* Status */
+.login-status {
+    margin-top: 15px;
+    min-height: 20px;
+    text-align: center;
+    font-size: 13px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(251, 113, 133, 0.1);
+    border: 1px solid rgba(251, 113, 133, 0.2);
+    color: var(--danger);
+    word-break: break-word;
+}
+
+.login-status.success {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.2);
+    color: var(--success);
+}
+
+.login-status.warning {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.2);
+    color: var(--warning);
+}
+
+.login-status.info {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.2);
+    color: #38bdf8;
+}
+
+/* ===== TOOL BOX ===== */
+.tool-box {
+    background: rgba(15,23,42,0.95);
+    border-radius: 18px;
+    border: 1px solid rgba(148,163,184,0.45);
+    box-shadow: 0 20px 45px rgba(15,23,42,0.95);
+    padding: 25px 20px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.tool-box::before {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background:
+      radial-gradient(circle at 0 0, rgba(56,189,248,0.22), transparent 55%),
+      radial-gradient(circle at 100% 100%, rgba(34,197,94,0.18), transparent 55%);
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.tool-inner {
+    position: relative;
+    z-index: 1;
+}
+
+/* Tool Header */
+.tool-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.tool-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 0%, #e0f2fe, #0ea5e9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0b1120;
+    box-shadow: 0 0 25px rgba(56,189,248,0.9);
+    margin: 0 auto 15px;
+    font-size: 20px;
+}
+
+.tool-title {
+    font-size: 18px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+}
+
+.tool-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+}
+
+/* Tool Select */
+.tool-select-group {
+    margin-bottom: 20px;
+}
+
+.select-field {
+    width: 100%;
+    background: rgba(2, 8, 23, 0.7);
+    border: 1px solid rgba(148,163,184,0.5);
+    border-radius: 999px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: all 0.25s;
+    box-sizing: border-box;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300E1FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+    background-size: 14px;
+    cursor: pointer;
+    -webkit-appearance: none;
+}
+
+.select-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(56,189,248,0.2);
+}
+
+/* Search Button */
+.search-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #020617;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 12px 28px rgba(8,47,73,0.95);
+    transition: all 0.3s;
+    margin-top: 20px;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
+}
+
+.search-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px rgba(8,47,73,0.95);
+}
+
+.search-btn:hover::before {
+    left: 100%;
+}
+
+.search-btn:active {
+    transform: translateY(0);
+}
+
+/* Status & Output */
+.search-status {
+    margin-top: 20px;
+    min-height: 20px;
+    text-align: center;
+    font-size: 13px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(148,163,184,0.2);
+    color: var(--muted);
+    word-break: break-word;
+}
+
+.search-status.success {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.2);
+    color: var(--success);
+}
+
+.search-status.error {
+    background: rgba(251, 113, 133, 0.1);
+    border-color: rgba(251, 113, 133, 0.2);
+    color: var(--danger);
+}
+
+.search-status.warning {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.2);
+    color: var(--warning);
+}
+
+.search-output {
+    margin-top: 20px;
+    background: rgba(2, 8, 23, 0.7);
+    border-radius: 12px;
+    border: 1px solid rgba(30,64,175,0.7);
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    animation: fadeIn 0.3s ease;
+    -webkit-overflow-scrolling: touch;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(148,163,184,0.3);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.output-title {
+    font-size: 13px;
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.copy-btn {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.copy-btn:hover {
+    background: rgba(56, 189, 248, 0.25);
+    transform: translateY(-2px);
+}
+
+.copy-btn.copied {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #22c55e;
+}
+
+.output-content {
+    font-family: 'Cascadia Code', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
+/* JSON Syntax Highlighting */
+.json-key { color: #38bdf8; }
+.json-string { color: #22c55e; }
+.json-number { color: #fbbf24; }
+.json-boolean { color: #22c55e; }
+.json-null { color: #94a3b8; }
+.json-bracket { color: #c084fc; }
+
+/* Loading Overlay */
+.scan-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,23,42,0.96);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    border-radius: inherit;
+    display: none;
+}
+
+.radar {
+    width: 100px;
+    height: 100px;
+    border-radius: 999px;
+    border: 1px solid rgba(148,163,184,0.6);
+    background: radial-gradient(circle, rgba(56,189,248,0.2) 0, transparent 60%);
+    position: relative;
+    overflow: hidden;
+}
+
+.radar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: conic-gradient(from 0deg, rgba(56,189,248,0.8), transparent 40%, transparent 100%);
+    animation: radarSweep 1.1s linear infinite;
+}
+
+.radar::after {
+    content: "";
+    position: absolute;
+    inset: 20%;
+    border-radius: 999px;
+    border: 1px solid rgba(15,23,42,0.7);
+}
+
+@keyframes radarSweep {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.scan-text {
+    margin-top: 15px;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Footer */
+.footer {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    padding-top: 15px;
+    border-top: 1px solid rgba(148,163,184,0.2);
+    line-height: 1.6;
+}
+
+.footer strong {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.footer .developer-name {
+    color: var(--accent2);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.footer .protocol-name {
+    color: var(--accent);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.footer a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer a:hover {
+    color: var(--accent2);
+    text-decoration: underline;
+}
+
+/* Hidden Class */
+.hidden {
+    display: none !important;
+}
+
+/* Shake Animation */
+.shake {
+    animation: shake 0.35s ease;
+}
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    50% { transform: translateX(6px); }
+    75% { transform: translateX(-4px); }
+    100% { transform: translateX(0); }
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: var(--panel);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+    width: 90%;
+    max-width: 400px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.modal-title {
+    font-size: 16px;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: var(--danger);
+}
+
+.modal-body {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.modal-btn {
+    padding: 10px 20px;
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 8px;
+    color: #38bdf8;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.modal-btn:hover {
+    background: rgba(56, 189, 248, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-container.sidebar-open {
+        transform: translateX(0);
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .main-container {
+        padding: 70px 12px 25px;
+        max-width: 100%;
+    }
+    
+    .login-box, .tool-box {
+        padding: 20px 15px;
+    }
+    
+    .login-title {
+        font-size: 18px;
+    }
+    
+    .tool-title {
+        font-size: 16px;
+    }
+    
+    .sidebar-header {
+        padding: 15px;
+    }
+    
+    .sidebar-content {
+        padding: 15px;
+    }
+    
+    .sidebar-close {
+        right: 10px;
+        top: 10px;
+        width: 30px;
+        height: 30px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-toggle {
+        left: 12px;
+        top: 12px;
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .main-container {
+        padding: 65px 10px 20px;
+    }
+    
+    .login-box, .tool-box {
+        padding: 18px 12px;
+    }
+    
+    .logo-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .tool-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+    
+    .login-title {
+        font-size: 16px;
+    }
+    
+    .tool-title {
+        font-size: 15px;
+    }
+    
+    .input-field, .select-field {
+        padding: 12px 15px;
+        font-size: 13px;
+    }
+    
+    .login-btn, .search-btn {
+        padding: 14px;
+        font-size: 13px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .history-item {
+        padding: 12px;
+    }
+    
+    .sidebar-user {
+        gap: 10px;
+    }
+    
+    .user-avatar {
+        width: 45px;
+        height: 45px;
+        min-width: 45px;
+        font-size: 18px;
+    }
+    
+    .user-info h3 {
+        font-size: 14px;
+    }
+    
+    .user-info p {
+        font-size: 11px;
+    }
+    
+    .nav-btn {
+        font-size: 11px;
+        padding: 8px;
+    }
+    
+    .footer {
+        font-size: 10px;
+        margin-top: 20px;
+    }
+    
+    .sidebar-logout-btn {
+        padding: 10px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 360px) {
+    .login-title {
+        font-size: 15px;
+    }
+    
+    .tool-title {
+        font-size: 14px;
+    }
+    
+    .pro-badge {
+        font-size: 8px;
+        padding: 2px 6px;
+        margin-left: 5px;
+    }
+    
+    .login-subtitle, .tool-subtitle {
+        font-size: 10px;
+    }
+    
+    .input-label {
+        font-size: 11px;
+    }
+    
+    .nav-btn {
+        min-width: 70px;
+        font-size: 10px;
+    }
+}
+
+/* Touch-friendly improvements */
+button, input, select {
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    touch-action: manipulation;
+}
+
+input, select, button {
+    font-size: 16px; /* Prevents zoom on iOS */
+}
+
+@media (max-width: 768px) {
+    input, select, button {
+        font-size: 16px !important;
+    }
+}
+
+/* Prevent text selection on buttons */
+button {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Improve scrollbar on mobile */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.5);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.7);
+}
+</style>
+</head>
+
+<body>
+
+<!-- Session Status Modal -->
+<div id="sessionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">⚠️ Session Alert</h3>
+            <button class="modal-close" onclick="closeModal('sessionModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="sessionModalMessage">Your session has expired. Please login again.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn" onclick="handleSessionAction()">OK</button>
+        </div>
+    </div>
+</div>
+
+<!-- Device Limit Modal -->
+<div id="deviceLimitModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">🔐 Device Limit Reached</h3>
+            <button class="modal-close" onclick="closeModal('deviceLimitModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>You have reached the maximum limit of 3 active devices.</p>
+            <p><strong>Options:</strong></p>
+            <ol style="padding-left: 20px; margin-top: 10px;">
+                <li>Logout from one of your other devices</li>
+                <li>Wait for inactive sessions to expire (24 hours)</li>
+                <li>Contact administrator to reset your sessions</li>
+            </ol>
+            <div class="active-devices-info" style="margin-top: 15px;">
+                <i class="fa-solid fa-laptop"></i> Max Devices: <span class="max-limit">3</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn" onclick="closeModal('deviceLimitModal')">OK</button>
+            <button class="modal-btn" style="margin-left: 10px;" onclick="logoutAllDevices()">Logout All Devices</button>
+        </div>
+    </div>
+</div>
+
+<!-- Active Sessions Modal -->
+<div id="sessionsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">🖥️ Active Sessions</h3>
+            <button class="modal-close" onclick="closeModal('sessionsModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="sessionsList" style="font-size: 12px;">
+                <p>Loading active sessions...</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn" onclick="closeModal('sessionsModal')">Close</button>
+            <button class="modal-btn" style="margin-left: 10px;" onclick="refreshSessions()">
+                <i class="fa-solid fa-rotate"></i> Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar Toggle Button -->
+<button class="sidebar-toggle" id="sidebarToggle">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-user">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <div class="user-info">
+                <h3 id="userName">Guest User</h3>
+                <p id="userRole">Not Logged In</p>
+            </div>
+        </div>
+        
+        <!-- Close button for sidebar -->
+        <button class="sidebar-close" id="sidebarClose">
+            <i class="fa-solid fa-times"></i>
+        </button>
+        
+        <!-- Session Status -->
+        <div class="session-status" id="sessionStatus" style="display: none;">
+            <span>
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span id="sessionStatusText">Session Active</span>
+            </span>
+            <span id="deviceCount">Device: 1/3</span>
+        </div>
+        
+        <div class="sidebar-nav">
+            <button class="nav-btn active" data-tab="history">
+                <i class="fa-solid fa-clock-rotate-left"></i> History
+            </button>
+            <button class="nav-btn" data-tab="stats">
+                <i class="fa-solid fa-chart-bar"></i> Stats
+            </button>
+            <button class="nav-btn" data-tab="devices" onclick="showActiveSessions()">
+                <i class="fa-solid fa-laptop"></i> Devices
+            </button>
+        </div>
+    </div>
+    
+    <div class="sidebar-content">
+        <!-- History Tab -->
+        <div id="history-tab" class="tab-pane active">
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--accent); font-size: 16px;">
+                <i class="fa-solid fa-timeline"></i> Activity History
+            </h3>
+            <div class="history-list" id="historyList">
+                <div class="history-item">
+                    <div class="history-header">
+                        <span class="history-type login">Login</span>
+                        <span class="history-time">Just now</span>
+                    </div>
+                    <div class="history-input">System initialized</div>
+                    <div class="history-result">
+                        <span class="result-badge result-success">Success</span>
+                        <span>PRO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats Tab -->
+        <div id="stats-tab" class="tab-pane">
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--accent); font-size: 16px;">
+                <i class="fa-solid fa-chart-pie"></i> Usage Statistics
+            </h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fa-solid fa-magnifying-glass" style="color: var(--accent);"></i>
+                    <div class="stat-value" id="totalSearches">0</div>
+                    <div class="stat-label">Total Searches</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-check-circle" style="color: var(--success);"></i>
+                    <div class="stat-value" id="successRate">0%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-phone" style="color: #38bdf8;"></i>
+                    <div class="stat-value" id="phoneSearches">0</div>
+                    <div class="stat-label">Phone Lookups</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-envelope" style="color: #fbbf24;"></i>
+                    <div class="stat-value" id="emailSearches">0</div>
+                    <div class="stat-label">Email Checks</div>
+                </div>
+            </div>
+            
+            <!-- Device Limit Info -->
+            <div class="active-devices-info">
+                <i class="fa-solid fa-laptop"></i> 
+                Active Devices: <span class="device-count" id="activeDeviceCount">0</span>/<span class="max-limit">3</span>
+                <div style="font-size: 10px; margin-top: 5px; opacity: 0.8;">
+                    Max 3 devices per user allowed
+                </div>
+            </div>
+            
+            <div class="quick-actions">
+                <h4><i class="fa-solid fa-bolt"></i> Quick Actions</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="clearHistory()">
+                        <i class="fa-solid fa-trash"></i>
+                        Clear Local History
+                    </button>
+                    <button class="action-btn" onclick="exportData()">
+                        <i class="fa-solid fa-download"></i>
+                        Export Activity Log
+                    </button>
+                    <button class="action-btn" onclick="refreshHistory()">
+                        <i class="fa-solid fa-rotate"></i>
+                        Refresh Statistics
+                    </button>
+                    <button class="action-btn" onclick="showActiveSessions()">
+                        <i class="fa-solid fa-laptop"></i>
+                        View Active Devices
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Logout button in sidebar content -->
+            <button class="sidebar-logout-btn" onclick="logout()">
+                <i class="fa-solid fa-sign-out-alt"></i>
+                Logout from System
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Main Container -->
+<div class="main-container" id="mainContainer">
+    <!-- Login Box -->
+    <div id="loginBox" class="login-box">
+        <div class="login-inner">
+            <div class="login-header">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h1 class="login-title">MULTI TOOL LOOKUP <span class="pro-badge">PRO</span></h1>
+                <div class="login-subtitle">Secure Intelligence Console</div>
+            </div>
+            
+            <!-- Device Info -->
+            <div class="active-devices-info" style="margin-bottom: 20px;">
+                <i class="fa-solid fa-laptop"></i> 
+                Device ID: <span id="loginDeviceId">Generating...</span>
+                <div style="font-size: 10px; margin-top: 5px; opacity: 0.8;">
+                    Max 3 devices per user allowed
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">
+                    <span>User ID</span>
+                    <span class="helper" title="Use: Jahid/jahid@info#, Shahid/shahid@3739">?</span>
+                </label>
+                <input id="userid" class="input-field" placeholder="Enter User ID">
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">
+                    <span>Password</span>
+                    <span class="helper" title="Case sensitive password">🔒</span>
+                </label>
+                <input id="password" type="password" class="input-field" placeholder="Enter Password">
+            </div>
+            
+            <button class="login-btn" onclick="login()">
+                <i class="fa-solid fa-fingerprint"></i>
+                GRANT ACCESS
+            </button>
+            
+            <div id="loginStatus" class="login-status"></div>
+            
+            <div class="footer">
+                <div>Developer: <strong class="developer-name">SHAHID ANSARI</strong></div>
+                <div style="margin-top: 5px;">Powered by <strong class="protocol-name">NULL PROTOCOL</strong></div>
+                <div style="margin-top: 5px; font-size: 10px;">All rights reserved © 2024 | Professional Edition</div>
+                <div style="margin-top: 10px; font-size: 10px; opacity: 0.7;">
+                    For support: <a href="#" onclick="showSupport()">@NullProtocol_X</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tool Box -->
+    <div id="toolBox" class="tool-box">
+        <div class="scan-overlay" id="scanOverlay">
+            <div class="radar"></div>
+            <div class="scan-text">PROCESSING REQUEST...</div>
+        </div>
+        
+        <div class="tool-inner">
+            <div class="tool-header">
+                <div class="tool-icon">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                </div>
+                <h1 class="tool-title">INTELLIGENCE CONSOLE</h1>
+                <div class="tool-subtitle">Multi-Tool Search Engine</div>
+            </div>
+            
+            <!-- Session Status -->
+            <div class="session-status" style="margin-bottom: 20px;">
+                <span>
+                    <span class="status-indicator" id="toolStatusIndicator"></span>
+                    <span id="toolSessionStatus">Session: Active</span>
+                </span>
+                <span>Device: <span id="toolDeviceId">Loading...</span></span>
+            </div>
+            
+            <div class="tool-select-group">
+                <label class="input-label">Select Intelligence Module</label>
+                <select id="type" class="select-field">
+                    <!-- Old APIs -->
+                    <option value="PHONE">📱 Phone Intelligence</option>
+                    <option value="IFSC">🏦 Financial Institution Lookup</option>
+                    <option value="EMAIL">📧 Email Verification & Analysis</option>
+                    <option value="VEHICLE">🚗 Vehicle Registration Database</option>
+                    <option value="PINCODE">📍 Geographic Pincode Information</option>
+                    <option value="GST">💰 GST Verification System</option>
+                    
+                    <!-- New APIs -->
+                    <option value="VEHICLE_CHALAN">🚓 Vehicle Chalan Information</option>
+                    <option value="TG_NUM">📞 Telegram to Number Lookup</option>
+                    <option value="IP">🌐 IP Address Information</option>
+                    <option value="FF_INFO">🎮 Free Fire Player Info</option>
+                    <option value="FF_BAN">🚫 Free Fire Ban Check</option>
+                    <option value="TG_INFO1">📱 Telegram User Info (API1)</option>
+                    <option value="TG_INFO2">📱 Telegram User Info (API2)</option>
+                    <option value="INSTA1">📸 Instagram Info (API1)</option>
+                    <option value="INSTA2">📸 Instagram Info (API2)</option>
+                    <option value="GITHUB">💻 GitHub User Information</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label" id="inputLabel">Enter Search Parameter</label>
+                <input id="inputValue" class="input-field" placeholder="Enter value to search...">
+            </div>
+            
+            <button class="search-btn" onclick="search()">
+                <i class="fa-solid fa-database"></i>
+                INITIATE SEARCH
+            </button>
+            
+            <div id="status" class="search-status"></div>
+            
+            <div id="output" class="search-output">
+                <div class="output-header">
+                    <div class="output-title">
+                        <i class="fa-solid fa-file-code"></i>
+                        <span>JSON Intelligence Response</span>
+                    </div>
+                    <button class="copy-btn" id="copyOutputBtn">
+                        <i class="fa-regular fa-copy"></i>
+                        Copy 
+                    </button>
+                </div>
+                <pre id="outputData" class="output-content">Awaiting query execution...</pre>
+            </div>
+            
+            <div class="footer">
+                <div>Intelligence Analyst: <strong class="developer-name">SHAHID ANSARI</strong></div>
+                <div style="margin-top: 5px;">Powered by <strong class="protocol-name">NULL PROTOCOL</strong> Advanced Intelligence System</div>
+                <div style="margin-top: 5px; font-size: 10px;">
+                    Device ID: <span id="footerDeviceId">Loading...</span> | 
+                    Session: <span id="footerSessionStatus">Active</span>
+                </div>
+                <div style="margin-top: 10px; font-size: 10px; opacity: 0.7;">
+                    <a href="#" onclick="showPrivacy()">Privacy Policy</a> | 
+                    <a href="#" onclick="showActiveSessions()">Active Devices</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== GOOGLE SCRIPT API URL =====
+// Replace this with your Google Script Web App URL
+const API_URL = "https://script.google.com/macros/s/AKfycbyCtsxb8P3jzDNCy5NZ8PjRDMdqsBGYXG_oncI_UU6qA7rsgfCSWMhzL-ZweS0EhA_VqQ/exec";
+
+// ===== ELEMENTS =====
+const loginBox = document.getElementById('loginBox');
+const toolBox = document.getElementById('toolBox');
+const loginStatus = document.getElementById('loginStatus');
+const statusEl = document.getElementById('status');
+const output = document.getElementById('output');
+const outputData = document.getElementById('outputData');
+const copyOutputBtn = document.getElementById('copyOutputBtn');
+const scanOverlay = document.getElementById('scanOverlay');
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebarToggle');
+const sidebarClose = document.getElementById('sidebarClose');
+const mainContainer = document.getElementById('mainContainer');
+const historyList = document.getElementById('historyList');
+const userName = document.getElementById('userName');
+const userRole = document.getElementById('userRole');
+const userAvatar = document.getElementById('userAvatar');
+const sessionStatus = document.getElementById('sessionStatus');
+const statusIndicator = document.getElementById('statusIndicator');
+const sessionStatusText = document.getElementById('sessionStatusText');
+const deviceCount = document.getElementById('deviceCount');
+const activeDeviceCount = document.getElementById('activeDeviceCount');
+const loginDeviceId = document.getElementById('loginDeviceId');
+const toolDeviceId = document.getElementById('toolDeviceId');
+const footerDeviceId = document.getElementById('footerDeviceId');
+const footerSessionStatus = document.getElementById('footerSessionStatus');
+const toolStatusIndicator = document.getElementById('toolStatusIndicator');
+const toolSessionStatus = document.getElementById('toolSessionStatus');
+const inputLabel = document.getElementById('inputLabel');
+
+// ===== GLOBAL VARIABLES =====
+let currentUser = null;
+let deviceId = null;
+let sessionValid = false;
+let checkSessionInterval = null;
+let localHistory = JSON.parse(localStorage.getItem('multiToolHistory') || '[]');
+let searchStats = JSON.parse(localStorage.getItem('searchStats') || '{"total":0,"success":0,"phone":0,"email":0,"ff":0,"tg":0,"insta":0,"github":0}');
+
+// ===== DEVICE ID MANAGEMENT =====
+function generateDeviceId() {
+    // Generate a unique device ID
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 12; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return 'DEV_' + result + '_' + Date.now().toString(36);
+}
+
+function getOrCreateDeviceId() {
+    // Try to get device ID from localStorage
+    let storedDeviceId = localStorage.getItem('multiToolDeviceId');
+    
+    if (!storedDeviceId) {
+        // Generate new device ID
+        storedDeviceId = generateDeviceId();
+        localStorage.setItem('multiToolDeviceId', storedDeviceId);
+    }
+    
+    return storedDeviceId;
+}
+
+// ===== SESSION MANAGEMENT =====
+async function checkSession() {
+    if (!currentUser || !deviceId) return false;
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "checkLogin",
+                userid: currentUser.id,
+                deviceId: deviceId
+            })
+        });
+        
+        const data = await response.json();
+        return data.success === true;
+    } catch (error) {
+        console.error("Session check error:", error);
+        return false;
+    }
+}
+
+async function validateSession() {
+    if (!currentUser || !deviceId) {
+        showSessionModal("Please login to continue");
+        return false;
+    }
+    
+    const isValid = await checkSession();
+    
+    if (!isValid) {
+        sessionValid = false;
+        showSessionModal("Your session has expired. Please login again.");
+        return false;
+    }
+    
+    sessionValid = true;
+    updateSessionStatus(true);
+    return true;
+}
+
+function updateSessionStatus(isActive) {
+    const indicator = isActive ? '●' : '○';
+    const color = isActive ? 'var(--success)' : 'var(--danger)';
+    const text = isActive ? 'Session Active' : 'Session Expired';
+    
+    // Update status indicator
+    if (statusIndicator) {
+        statusIndicator.style.background = color;
+        sessionStatusText.textContent = text;
+        sessionStatus.style.display = 'flex';
+    }
+    
+    if (toolStatusIndicator) {
+        toolStatusIndicator.style.background = color;
+        toolSessionStatus.textContent = `Session: ${text}`;
+    }
+    
+    if (footerSessionStatus) {
+        footerSessionStatus.textContent = isActive ? 'Active' : 'Expired';
+        footerSessionStatus.style.color = color;
+    }
+}
+
+function showSessionModal(message) {
+    document.getElementById('sessionModalMessage').textContent = message;
+    document.getElementById('sessionModal').style.display = 'block';
+}
+
+function handleSessionAction() {
+    closeModal('sessionModal');
+    if (!sessionValid) {
+        // Force logout
+        logout();
+    }
+}
+
+// ===== LOGIN/LOGOUT FUNCTIONS =====
+async function login() {
+    const userid = document.getElementById('userid').value.trim();
+    const password = document.getElementById('password').value.trim();
+    
+    // Basic validation
+    if (!userid || !password) {
+        showLoginError("Please enter User ID and Password");
+        loginBox.classList.add('shake');
+        setTimeout(() => loginBox.classList.remove('shake'), 350);
+        return;
+    }
+    
+    // Get device ID
+    deviceId = getOrCreateDeviceId();
+    
+    // Show loading state
+    loginStatus.textContent = "🔐 Authenticating with secure protocol...";
+    loginStatus.className = "login-status info";
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "login",
+                userid: userid,
+                password: password,
+                deviceId: deviceId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Store user info
+            currentUser = {
+                id: userid,
+                name: data.userName || userid,
+                role: data.userType || 'USER'
+            };
+            
+            // Update UI
+            userName.textContent = currentUser.name;
+            userRole.textContent = currentUser.role;
+            userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
+            
+            // Update device displays
+            toolDeviceId.textContent = deviceId.substring(0, 8) + '...';
+            footerDeviceId.textContent = deviceId.substring(0, 8) + '...';
+            
+            // Success message
+            loginStatus.textContent = "✅ Access granted! Loading intelligence console...";
+            loginStatus.className = "login-status success";
+            
+            // Log to Google Sheet
+            logActivity('LOGIN', 'SYSTEM', 'N/A', 'SUCCESS');
+            
+            // Update local storage
+            localHistory.unshift({
+                timestamp: new Date().toISOString(),
+                type: 'LOGIN',
+                input: 'System Access',
+                result: 'SUCCESS',
+                user: currentUser.name,
+                deviceId: deviceId
+            });
+            localStorage.setItem('multiToolHistory', JSON.stringify(localHistory.slice(0, 50)));
+            
+            // Switch to tool box
+            setTimeout(() => {
+                loginBox.classList.add('hidden');
+                toolBox.style.display = 'block';
+                updateHistoryDisplay();
+                updateStatsDisplay();
+                updateDeviceInfo();
+                
+                // Enable sidebar
+                sidebarToggle.style.display = 'flex';
+                
+                // Start session checking
+                startSessionChecker();
+            }, 800);
+            
+        } else {
+            // Check for device limit error
+            if (data.code === "MAX_DEVICES") {
+                showDeviceLimitModal();
+                loginStatus.textContent = "❌ Maximum device limit reached (3 devices)";
+                loginStatus.className = "login-status warning";
+            } else {
+                // Other login failure
+                logActivity('LOGIN', 'SYSTEM', 'N/A', 'FAILED');
+                showLoginError("❌ Invalid credentials. Access denied.");
+            }
+            loginBox.classList.add('shake');
+            setTimeout(() => loginBox.classList.remove('shake'), 350);
+        }
+        
+    } catch (error) {
+        showLoginError("⚠️ Network error. Please try again.");
+        console.error("Login error:", error);
+    }
+}
+
+async function logout() {
+    if (confirm("Are you sure you want to logout from this device?")) {
+        try {
+            // Send logout request to server
+            if (currentUser && deviceId) {
+                await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "logout",
+                        userid: currentUser.id,
+                        deviceId: deviceId,
+                        userName: currentUser.name
+                    })
+                });
+            }
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+        
+        // Reset user data
+        currentUser = null;
+        sessionValid = false;
+        
+        // Stop session checker
+        if (checkSessionInterval) {
+            clearInterval(checkSessionInterval);
+            checkSessionInterval = null;
+        }
+        
+        // Reset UI
+        userName.textContent = "Guest User";
+        userRole.textContent = "Not Logged In";
+        userAvatar.textContent = "U";
+        sessionStatus.style.display = 'none';
+        
+        // Switch back to login screen
+        loginBox.classList.remove('hidden');
+        toolBox.style.display = 'none';
+        
+        // Hide sidebar toggle
+        sidebarToggle.style.display = 'none';
+        
+        // Close sidebar if open
+        if (sidebar.classList.contains('active')) {
+            toggleSidebar();
+        }
+        
+        // Clear input fields
+        document.getElementById('userid').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('inputValue').value = '';
+        
+        // Reset status
+        loginStatus.textContent = '';
+        loginStatus.className = "login-status";
+        statusEl.textContent = '';
+        
+        // Hide output
+        output.style.display = 'none';
+        
+        // Show logout message
+        showStatus("Logged out successfully", "success");
+        
+        // Log logout activity
+        logActivity('LOGOUT', 'SYSTEM', 'N/A', 'SUCCESS');
+        
+        // Add to local history
+        localHistory.unshift({
+            timestamp: new Date().toISOString(),
+            type: 'LOGOUT',
+            input: 'User logged out',
+            result: 'SUCCESS',
+            user: 'System',
+            deviceId: deviceId
+        });
+        localStorage.setItem('multiToolHistory', JSON.stringify(localHistory.slice(0, 50)));
+        
+        // Update history display
+        updateHistoryDisplay();
+        
+        console.log("User logged out");
+    }
+}
+
+async function logoutAllDevices() {
+    if (currentUser && confirm("Logout from ALL devices? This will end all your active sessions.")) {
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "forceLogoutAll",
+                    targetUser: currentUser.id
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showStatus("Logged out from all devices", "success");
+                // Continue with normal logout
+                logout();
+            }
+        } catch (error) {
+            console.error("Force logout error:", error);
+            showStatus("Error logging out from all devices", "error");
+        }
+    }
+}
+
+function showLoginError(message) {
+    loginStatus.textContent = message;
+    loginStatus.className = "login-status error";
+}
+
+// ===== SESSION CHECKER =====
+function startSessionChecker() {
+    // Check session every 30 seconds
+    checkSessionInterval = setInterval(async () => {
+        if (currentUser && deviceId) {
+            const isValid = await checkSession();
+            if (!isValid && sessionValid) {
+                // Session just expired
+                sessionValid = false;
+                updateSessionStatus(false);
+                showSessionModal("Your session has expired. Please login again.");
+            } else if (isValid && !sessionValid) {
+                // Session restored
+                sessionValid = true;
+                updateSessionStatus(true);
+            }
+        }
+    }, 30000);
+    
+    // Initial check
+    validateSession();
+}
+
+// ===== SEARCH FUNCTION =====
+async function search() {
+    // Validate session first
+    if (!await validateSession()) {
+        return;
+    }
+    
+    const type = document.getElementById('type').value;
+    const input = document.getElementById('inputValue').value.trim();
+    
+    // Update input label based on selection
+    updateInputLabel(type);
+    
+    // Validation
+    if (!input) {
+        showStatus("Please enter a value to search", "error");
+        return;
+    }
+    
+    // Update stats
+    searchStats.total++;
+    
+    // Update specific API stats
+    if (type === 'PHONE') searchStats.phone++;
+    if (type === 'EMAIL') searchStats.email++;
+    if (type === 'FF_INFO' || type === 'FF_BAN') searchStats.ff++;
+    if (type === 'TG_INFO1' || type === 'TG_INFO2' || type === 'TG_NUM') searchStats.tg++;
+    if (type === 'INSTA1' || type === 'INSTA2') searchStats.insta++;
+    if (type === 'GITHUB') searchStats.github++;
+    
+    localStorage.setItem('searchStats', JSON.stringify(searchStats));
+    
+    // Show loading
+    scanOverlay.style.display = 'flex';
+    statusEl.textContent = "🔍 Querying intelligence database...";
+    statusEl.className = "search-status";
+    output.style.display = 'none';
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "api",
+                type: type,
+                input: input,
+                userId: currentUser.id,
+                userName: currentUser.name,
+                deviceId: deviceId
+            })
+        });
+        
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            // Handle non-JSON response
+            data = {
+                success: false,
+                message: "Invalid response from server",
+                rawResponse: await response.text()
+            };
+        }
+        
+        // Hide loading
+        scanOverlay.style.display = 'none';
+        
+        if (data.success === false) {
+            // Check for session expired error
+            if (data.code === "SESSION_EXPIRED") {
+                showSessionModal("Session expired. Please login again.");
+                sessionValid = false;
+                updateSessionStatus(false);
+                return;
+            }
+            
+            showStatus("❌ Search failed: " + (data.message || "Unknown error"), "error");
+            logActivity('SEARCH', type, input, 'FAILED');
+        } else {
+            // Display results
+            displayResult(data);
+            showStatus("✅ Intelligence query completed successfully", "success");
+            
+            // Update stats
+            searchStats.success++;
+            localStorage.setItem('searchStats', JSON.stringify(searchStats));
+            
+            // Log success
+            logActivity('SEARCH', type, input, 'SUCCESS');
+        }
+        
+        // Add to local history
+        localHistory.unshift({
+            timestamp: new Date().toISOString(),
+            type: type,
+            input: input,
+            result: data.success === false ? 'FAILED' : 'SUCCESS',
+            user: currentUser.name,
+            deviceId: deviceId
+        });
+        localStorage.setItem('multiToolHistory', JSON.stringify(localHistory.slice(0, 50)));
+        
+        // Update displays
+        updateHistoryDisplay();
+        updateStatsDisplay();
+        
+    } catch (error) {
+        scanOverlay.style.display = 'none';
+        showStatus("⚠️ Network error. Please try again.", "error");
+        console.error("Search error:", error);
+        
+        // Show error in output
+        outputData.textContent = JSON.stringify({
+            error: "Request failed",
+            message: error.message,
+            timestamp: new Date().toISOString(),
+            session: deviceId,
+            developer: "SHAHID ANSARI",
+            powered_by: "NULL PROTOCOL"
+        }, null, 2);
+        output.style.display = 'block';
+        syntaxHighlight(outputData);
+        
+        // Log error
+        logActivity('SEARCH', type, input, 'ERROR');
+    }
+}
+
+function updateInputLabel(apiType) {
+    const labels = {
+        'PHONE': 'Enter Phone Number',
+        'IFSC': 'Enter IFSC Code',
+        'EMAIL': 'Enter Email Address',
+        'VEHICLE': 'Enter Vehicle Number',
+        'PINCODE': 'Enter Pincode',
+        'GST': 'Enter GST Number',
+        'VEHICLE_CHALAN': 'Enter Vehicle Registration Number',
+        'TG_NUM': 'Enter Phone Number',
+        'IP': 'Enter IP Address',
+        'FF_INFO': 'Enter Free Fire UID',
+        'FF_BAN': 'Enter Free Fire UID',
+        'TG_INFO1': 'Enter Telegram Username',
+        'TG_INFO2': 'Enter Telegram Username',
+        'INSTA1': 'Enter Instagram Username',
+        'INSTA2': 'Enter Instagram Username',
+        'GITHUB': 'Enter GitHub Username'
+    };
+    
+    if (inputLabel) {
+        inputLabel.textContent = labels[apiType] || 'Enter Search Parameter';
+    }
+}
+
+// ===== LOG ACTIVITY TO GOOGLE SHEET =====
+async function logActivity(action, type, input, result) {
+    if (!currentUser) return;
+    
+    try {
+        await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "logActivity",
+                activityAction: action,
+                activityType: type,
+                input: input,
+                result: result,
+                userId: currentUser.id,
+                userName: currentUser.name,
+                deviceId: deviceId
+            })
+        });
+    } catch (error) {
+        console.error("Failed to log activity:", error);
+    }
+}
+
+// ===== DISPLAY RESULT =====
+function displayResult(data) {
+    try {
+        // Format JSON with indentation
+        const formattedJSON = JSON.stringify(data, null, 2);
+        outputData.textContent = formattedJSON;
+        
+        // Apply syntax highlighting
+        syntaxHighlight(outputData);
+        
+        // Setup copy button
+        setupCopyButton(copyOutputBtn, formattedJSON);
+        
+        // Show output
+        output.style.display = 'block';
+        
+        // Scroll to output
+        setTimeout(() => {
+            output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+        
+    } catch (error) {
+        outputData.textContent = `Error displaying results: ${error.message}`;
+        output.style.display = 'block';
+    }
+}
+
+// ===== HISTORY MANAGEMENT =====
+function updateHistoryDisplay() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '';
+    
+    if (localHistory.length === 0) {
+        historyList.innerHTML = `
+            <div class="history-item">
+                <div class="history-input" style="text-align: center; color: var(--muted);">
+                    No activity history yet
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    localHistory.slice(0, 10).forEach(item => {
+        const time = new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const typeName = getTypeName(item.type);
+        const resultClass = item.result === 'SUCCESS' ? 'result-success' : 
+                           item.result === 'FAILED' ? 'result-failed' : 'result-pending';
+        
+        historyList.innerHTML += `
+            <div class="history-item">
+                <div class="history-header">
+                    <span class="history-type ${item.type === 'LOGIN' || item.type === 'LOGOUT' ? 'login' : 'search'}">
+                        ${item.type === 'LOGIN' ? 'Login' : item.type === 'LOGOUT' ? 'Logout' : typeName}
+                    </span>
+                    <span class="history-time">${time}</span>
+                </div>
+                <div class="history-input">${item.input}</div>
+                <div class="history-result">
+                    <span class="result-badge ${resultClass}">${item.result}</span>
+                    <span>${item.user}</span>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function updateStatsDisplay() {
+    document.getElementById('totalSearches').textContent = searchStats.total;
+    document.getElementById('phoneSearches').textContent = searchStats.phone;
+    document.getElementById('emailSearches').textContent = searchStats.email;
+    
+    const successRate = searchStats.total > 0 ? 
+        Math.round((searchStats.success / searchStats.total) * 100) : 0;
+    document.getElementById('successRate').textContent = `${successRate}%`;
+}
+
+async function updateDeviceInfo() {
+    try {
+        if (currentUser) {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "getActiveLogins",
+                    userid: currentUser.id
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success && data.activeLogins) {
+                const userLogins = data.activeLogins.filter(login => login.userId === currentUser.id);
+                const activeCount = userLogins.length;
+                
+                // Update device count displays
+                if (deviceCount) {
+                    deviceCount.textContent = `Device: ${activeCount}/3`;
+                }
+                if (activeDeviceCount) {
+                    activeDeviceCount.textContent = activeCount;
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error updating device info:", error);
+    }
+}
+
+function getTypeName(type) {
+    const types = {
+        'PHONE': 'Phone Lookup',
+        'IFSC': 'Bank Details',
+        'EMAIL': 'Email Check',
+        'VEHICLE': 'Vehicle Info',
+        'PINCODE': 'Pincode',
+        'GST': 'GST Details',
+        'VEHICLE_CHALAN': 'Vehicle Chalan',
+        'TG_NUM': 'Telegram Number',
+        'IP': 'IP Lookup',
+        'FF_INFO': 'Free Fire Info',
+        'FF_BAN': 'FF Ban Check',
+        'TG_INFO1': 'Telegram Info 1',
+        'TG_INFO2': 'Telegram Info 2',
+        'INSTA1': 'Instagram 1',
+        'INSTA2': 'Instagram 2',
+        'GITHUB': 'GitHub Info',
+        'LOGIN': 'System Login',
+        'LOGOUT': 'System Logout'
+    };
+    return types[type] || type;
+}
+
+// ===== UTILITY FUNCTIONS =====
+function syntaxHighlight(preElement) {
+    const json = preElement.textContent;
+    let highlighted = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    highlighted = highlighted.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g, function (match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'json-key';
+                match = match.replace(/:$/, '') + '<span class="json-bracket">:</span>';
+            } else {
+                cls = 'json-string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+            cls = 'json-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+    
+    preElement.innerHTML = highlighted;
+}
+
+function setupCopyButton(button, text) {
+    button.onclick = async () => {
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                // Fallback for non-secure contexts
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+            
+            // Visual feedback
+            button.classList.add('copied');
+            button.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                button.classList.remove('copied');
+                button.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+            }, 2000);
+            
+        } catch (error) {
+            console.error('Copy failed:', error);
+            button.innerHTML = '<i class="fa-solid fa-xmark"></i> Error';
+            setTimeout(() => {
+                button.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+            }, 2000);
+        }
+    };
+}
+
+function showStatus(message, type = "info") {
+    statusEl.textContent = message;
+    statusEl.className = `search-status ${type}`;
+}
+
+// ===== MODAL FUNCTIONS =====
+function showDeviceLimitModal() {
+    document.getElementById('deviceLimitModal').style.display = 'block';
+}
+
+async function showActiveSessions() {
+    if (!currentUser) {
+        showSessionModal("Please login to view active sessions");
+        return;
+    }
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "getActiveLogins",
+                userid: currentUser.id
+            })
+        });
+        
+        const data = await response.json();
+        const sessionsList = document.getElementById('sessionsList');
+        
+        if (data.success && data.activeLogins) {
+            const userLogins = data.activeLogins.filter(login => login.userId === currentUser.id);
+            
+            if (userLogins.length === 0) {
+                sessionsList.innerHTML = '<p>No active sessions found.</p>';
+            } else {
+                let html = `<p>You have <strong>${userLogins.length}</strong> active session(s):</p>`;
+                html += '<ul style="padding-left: 20px; margin-top: 10px;">';
+                
+                userLogins.forEach(login => {
+                    const isCurrentDevice = login.deviceId === deviceId;
+                    const loginTime = new Date(login.loginTime).toLocaleString();
+                    const lastActive = new Date(login.lastActive).toLocaleString();
+                    
+                    html += `
+                        <li style="margin-bottom: 10px; padding: 8px; background: rgba(30, 41, 59, 0.3); border-radius: 5px;">
+                            <div><strong>Device:</strong> ${login.deviceId.substring(0, 12)}...</div>
+                            <div><strong>IP:</strong> ${login.ip}</div>
+                            <div><strong>Login:</strong> ${loginTime}</div>
+                            <div><strong>Last Active:</strong> ${lastActive}</div>
+                            ${isCurrentDevice ? '<div style="color: var(--success);"><i class="fa-solid fa-check"></i> Current Device</div>' : ''}
+                        </li>
+                    `;
+                });
+                
+                html += '</ul>';
+                sessionsList.innerHTML = html;
+            }
+        } else {
+            sessionsList.innerHTML = '<p>Unable to load active sessions.</p>';
+        }
+        
+        document.getElementById('sessionsModal').style.display = 'block';
+    } catch (error) {
+        console.error("Error loading sessions:", error);
+        const sessionsList = document.getElementById('sessionsList');
+        sessionsList.innerHTML = '<p>Error loading active sessions.</p>';
+        document.getElementById('sessionsModal').style.display = 'block';
+    }
+}
+
+function refreshSessions() {
+    showActiveSessions();
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// ===== SIDEBAR FUNCTIONS =====
+function toggleSidebar() {
+    sidebar.classList.toggle('active');
+    mainContainer.classList.toggle('sidebar-open');
+    sidebarToggle.innerHTML = sidebar.classList.contains('active') ? 
+        '<i class="fa-solid fa-times"></i>' : '<i class="fa-solid fa-bars"></i>';
+}
+
+function switchTab(tabName) {
+    // Update active tab button
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    
+    // Show active tab content
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.toggle('active', pane.id === `${tabName}-tab`);
+    });
+}
+
+// ===== SIDEBAR ACTIONS =====
+function clearHistory() {
+    if (confirm("Clear local history? This won't affect Google Sheets logs.")) {
+        localStorage.removeItem('multiToolHistory');
+        localHistory = [];
+        updateHistoryDisplay();
+        showStatus("Local history cleared", "success");
+    }
+}
+
+function refreshHistory() {
+    updateStatsDisplay();
+    updateDeviceInfo();
+    showStatus("Statistics refreshed", "success");
+}
+
+function exportData() {
+    const data = {
+        user: currentUser,
+        history: localHistory,
+        stats: searchStats,
+        deviceId: deviceId,
+        exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `multi-tool-export-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showStatus("Data exported successfully", "success");
+}
+
+function showAPIInfo() {
+    alert(`API Endpoint: ${API_URL}\n\nThis application uses multiple external APIs for data retrieval. All requests are logged for security and monitoring purposes.\n\nPowered by NULL PROTOCOL`);
+}
+
+function showSupport() {
+    alert("Support Contact: @NullProtocol_X\n\nFor technical issues or feature requests, please contact the developer SHAHID ANSARI.\n\nAll rights reserved © 2024");
+}
+
+function showPrivacy() {
+    alert("Privacy Policy:\n\n1. All login and search activities are logged\n2. Data is stored in Google Sheets for security monitoring\n3. No personal data is shared with third parties\n4. Sessions are automatically tracked\n5. Users can export their own data\n\nPowered by NULL PROTOCOL Security Framework");
+}
+
+// ===== EVENT LISTENERS =====
+document.getElementById('password').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') login();
+});
+
+document.getElementById('inputValue').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') search();
+});
+
+// Update input label when API selection changes
+document.getElementById('type').addEventListener('change', function() {
+    updateInputLabel(this.value);
+});
+
+sidebarToggle.addEventListener('click', toggleSidebar);
+sidebarClose.addEventListener('click', toggleSidebar);
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// Close sidebar when clicking outside
+document.addEventListener('click', (e) => {
+    if (sidebar.classList.contains('active') && 
+        !sidebar.contains(e.target) && 
+        !sidebarToggle.contains(e.target)) {
+        toggleSidebar();
+    }
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+
+// ===== INITIALIZE =====
+window.addEventListener('DOMContentLoaded', () => {
+    // Initialize device ID
+    deviceId = getOrCreateDeviceId();
+    loginDeviceId.textContent = deviceId.substring(0, 12) + '...';
+    
+    // Add some visual effect
+    setTimeout(() => {
+        document.querySelector('.login-box').style.opacity = '1';
+    }, 100);
+    
+    // Initialize displays
+    updateHistoryDisplay();
+    updateStatsDisplay();
+    
+    // Hide sidebar toggle initially
+    sidebarToggle.style.display = 'none';
+    
+    // Set initial input label
+    updateInputLabel(document.getElementById('type').value);
+    
+    // Initial terminal log
+    console.log("🔒 Multi Tool Lookup PRO initialized");
+    console.log("⚡ Powered by NULL PROTOCOL Advanced Intelligence System");
+    console.log("👨‍💻 Developer: SHAHID ANSARI");
+    console.log("📱 Device ID:", deviceId);
+    console.log("🔐 3-Device Login System: ACTIVE");
+});
+
+// Mobile touch improvements
+document.addEventListener('touchstart', function() {}, {passive: true});
+
+// Prevent zoom on double tap
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function (event) {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+    }
+    lastTouchEnd = now;
+}, false);
+</script>
+
+</body>
+</html>
