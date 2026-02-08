@@ -1472,17 +1472,17 @@ button {
             <div class="input-group">
                 <label class="input-label">
                     <span>User ID</span>
-                    <span class="helper" title="Use: Jahid/jahid@info#, Shahid/shahid@3739">?</span>
+                    <span class="helper" title="Enter your User ID">?</span>
                 </label>
-                <input id="userid" class="input-field" placeholder="Enter User ID">
+                <input id="userid" class="input-field" placeholder="Enter your User ID">
             </div>
             
             <div class="input-group">
                 <label class="input-label">
                     <span>Password</span>
-                    <span class="helper" title="Case sensitive password">🔒</span>
+                    <span class="helper" title="Enter your Password">🔒</span>
                 </label>
-                <input id="password" type="password" class="input-field" placeholder="Enter Password">
+                <input id="password" type="password" class="input-field" placeholder="Enter your Password">
             </div>
             
             <button class="login-btn" onclick="login()">
@@ -1616,7 +1616,7 @@ let searchStats = JSON.parse(localStorage.getItem('searchStats') || '{"total":0,
 
 // ===== DEVICE ID MANAGEMENT =====
 function generateDeviceId() {
-    // Generate a unique device ID (hidden from user)
+    // Generate a unique device ID
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
     for (let i = 0; i < 12; i++) {
@@ -1700,7 +1700,7 @@ async function login() {
         return;
     }
     
-    // Get device ID (hidden from user)
+    // Get device ID
     deviceId = getOrCreateDeviceId();
     
     // Show loading state
@@ -1767,7 +1767,7 @@ async function login() {
         } else {
             // Check for device limit error
             if (data.code === "MAX_DEVICES") {
-                loginStatus.textContent = "❌ Maximum login limit reached. Please logout from other sessions.";
+                loginStatus.textContent = "❌ Maximum login limit reached. Please logout from other devices.";
                 loginStatus.className = "login-status warning";
             } else {
                 // Other login failure
@@ -2337,7 +2337,7 @@ window.addEventListener('click', function(event) {
 
 // ===== INITIALIZE =====
 window.addEventListener('DOMContentLoaded', () => {
-    // Initialize device ID (hidden from user)
+    // Initialize device ID
     deviceId = getOrCreateDeviceId();
     
     // Add some visual effect
@@ -2359,7 +2359,7 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log("🔒 Multi Tool Portal PRO v3.0 initialized");
     console.log("⚡ Powered by NULL PROTOCOL Advanced Intelligence System");
     console.log("👨‍💻 Developer: SHAHID ANSARI");
-    console.log("🔐 3-Device Login System: ACTIVE (Backend Only)");
+    console.log("🔐 Secure Authentication: ACTIVE");
 });
 
 // Mobile touch improvements
